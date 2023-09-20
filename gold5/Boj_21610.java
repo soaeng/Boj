@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
     https://www.acmicpc.net/problem/21610
 */
 public class Boj_21610 {
-    static int N, M;
+    static int N, M, ans = 0;
     static int[][] map;
     static int[][] info;
     static int[][] deltas = {{0, -1}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}};
@@ -45,14 +45,10 @@ public class Boj_21610 {
 
         for (int i = 0; i < M; i++) {
             move(info[i][0], info[i][1]);
-            bfs();
+            bfs(i == M - 1);
+            System.out.println();
         }
-        int ans = 0;
-        for (int[] nn : map) {
-            for (int n : nn) {
-                ans += n;
-            }
-        }
+
         System.out.println(ans);
     }
 
@@ -64,7 +60,7 @@ public class Boj_21610 {
         }
     }
 
-    private static void bfs() {
+    private static void bfs(boolean last) {
         boolean[][] visited = new boolean[N][N];
         while (!queue.isEmpty()) {
             Node node = queue.poll();
@@ -83,6 +79,7 @@ public class Boj_21610 {
                     queue.offer(new Node(i, j));
                     map[i][j] -= 2;
                 }
+                if (last) ans += map[i][j];
             }
         }
     }
