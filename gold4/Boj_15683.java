@@ -12,13 +12,8 @@ public class Boj_15683 {
     static int N, M;
     static int[][] map;
     static int[][] deltas = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}};
-    static int[][] camDeltas = {
-            {1, 0, 0, 0, 4},
-            {1, 0, 1, 0, 2},
-            {1, 1, 0, 0, 4},
-            {1, 1, 1, 0, 4},
-            {1, 1, 1, 1, 1}
-    };
+    static int[][] camDeltas = {{1, 0, 0, 0}, {1, 0, 1, 0}, {1, 1, 0, 0}, {1, 1, 1, 0}, {1, 1, 1, 1}};
+    static int[] caseNum;
     static ArrayList<Camera> cameras;
 
     public void solution() throws Exception {
@@ -27,6 +22,7 @@ public class Boj_15683 {
         N = Integer.parseInt(st.nextToken());
         M = Integer.parseInt(st.nextToken());
         map = new int[N][M];
+        caseNum = new int[]{4, 2, 4, 4, 1};
         cameras = new ArrayList<>();
         for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
@@ -45,10 +41,10 @@ public class Boj_15683 {
         int[][] temp = new int[N][M];
         int ans = Integer.MAX_VALUE;
         int type = cameras.get(cnt).type;
-        for (int d = 0; d < camDeltas[type][4]; d++) {
+        for (int d = 0; d < caseNum[type]; d++) {
             copyMap(temp, map);
             for (int i = 0; i < 4; i++) {
-                if (camDeltas[type][i] == 1) watch(cameras.get(cnt), (d + i) % 4);
+                if (camDeltas[type][i] == 1) getView(cameras.get(cnt), (d + i) % 4);
             }
             ans = Math.min(ans, solve(cnt + 1));
             copyMap(map, temp);
@@ -56,7 +52,7 @@ public class Boj_15683 {
         return ans;
     }
 
-    private static void watch(Camera camera, int d) {
+    private static void getView(Camera camera, int d) {
         int r = camera.r;
         int c = camera.c;
         while (true) {
