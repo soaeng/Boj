@@ -33,16 +33,11 @@ public class Boj_15644 {
                 }
             }
         }
-        Info result = bfs(red, blue);
-        StringBuilder sb = new StringBuilder();
-        if (result != null) {
-            sb.append(result.count).append("\n");
-            sb.append(result.dir);
-        } else sb.append(-1);
-        System.out.println(sb);
+        System.out.println(bfs(red, blue));
     }
 
-    private static Info bfs(Marble r, Marble b) {
+    private static String bfs(Marble r, Marble b) {
+        StringBuilder sb = new StringBuilder();
         Queue<Info> queue = new LinkedList<>();
         boolean[][][][] visited = new boolean[N][M][N][M];
         String dir = "UDLR";
@@ -50,11 +45,15 @@ public class Boj_15644 {
         while (!queue.isEmpty()) {
             Info info = queue.poll();
             // 10번 이하로 움직여서 빨간 구슬을 구멍을 통해 빼낼 수 없으면 -1을 출력
-            if (info.count > 10) return null;
+            if (info.count > 10) break;
             // 파란 구슬이 구멍에 빠지면 실패
             if (map[info.blue.r][info.blue.c] == 'O') continue;
             // 최소 몇 번 만에 빨간 구슬을 구멍을 통해 빼낼 수 있는지
-            if (map[info.red.r][info.red.c] == 'O') return info;
+            if (map[info.red.r][info.red.c] == 'O') {
+                sb.append(info.count).append("\n");
+                sb.append(info.dir);
+                return sb.toString();
+            }
             for (int d = 0; d < 4; d++) {
                 Marble red = moveMarble(info.red, d);
                 Marble blue = moveMarble(info.blue, d);
@@ -73,7 +72,7 @@ public class Boj_15644 {
                 visited[red.r][red.c][blue.r][blue.c] = true;
             }
         }
-        return null;
+        return "-1";
     }
 
     private static Marble moveMarble(Marble marble, int d) {
