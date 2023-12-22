@@ -10,32 +10,32 @@ import java.util.Stack;
  */
 public class Boj_9012 {
     static int T;
-    static String PS;
-    static String ans;
-    static Stack<String> stack;
 
     public void solution() throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringBuilder sb = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
         T = Integer.parseInt(br.readLine());
-        int len;
         for (int t = 0; t < T; t++) {
-            ans = "";
-            stack = new Stack<>();
-            PS = br.readLine();
-            len = PS.length();
-            for (int i = 0; i < len; i++) {
-                if (PS.charAt(i) == '(') stack.push("(");
-                else {
-                    if (stack.isEmpty()) {
-                        ans = "NO";
+            String str = br.readLine();
+            boolean flag = false; // 판단 완료했는지
+//            stack = new Stack<>();
+            stack.clear();
+            for (int i = 0; i < str.length(); i++) {
+                if (str.charAt(i) == '(') {
+                    stack.push('(');
+                } else {
+                    if (!stack.isEmpty()) stack.pop();
+                    else {
+                        flag = true;
                         break;
-                    } else stack.pop();
+                    }
                 }
             }
-            if (ans.equals("NO") || !stack.isEmpty()) ans = "NO";
-            else ans = "YES";
-            sb.append(ans).append("\n");
+            if (!stack.isEmpty()) flag = true;
+            if (flag) sb.append("NO");
+            else sb.append("YES");
+            sb.append("\n");
         }
         System.out.println(sb);
     }
