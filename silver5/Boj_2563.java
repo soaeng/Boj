@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 */
 public class Boj_2563 {
     public void solution() throws Exception {
-        int[][] map = new int[101][101];
+        boolean[][] map = new boolean[101][101];
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         int N = Integer.parseInt(br.readLine());
         for (int n = 0; n < N; n++) {
@@ -19,14 +19,14 @@ public class Boj_2563 {
             int y = Integer.parseInt(st.nextToken());
             for (int i = x; i < x + 10; i++) {
                 for (int j = y; j < y + 10; j++) {
-                    map[i][j] = 1;
+                    map[i][j] = true;
                 }
             }
         }
         int area = 0;
-        for (int[] bb : map) {
-            for (int b : bb) {
-                area += b;
+        for (boolean[] bb : map) {
+            for (boolean b : bb) {
+                if (b) area++;
             }
         }
         System.out.println(area);
