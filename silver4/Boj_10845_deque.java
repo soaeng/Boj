@@ -10,40 +10,33 @@ import java.util.StringTokenizer;
     큐
     https://www.acmicpc.net/problem/10845
  */
-public class Boj_10845 {
-    static int N;
-    static Deque<Integer> queue = new ArrayDeque<>();
+public class Boj_10845_deque {
 
     public void solution() throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        N = Integer.parseInt(br.readLine());
+        int N = Integer.parseInt(br.readLine());
+        Deque<Integer> queue = new ArrayDeque<>();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < N; i++) {
             StringTokenizer st = new StringTokenizer(br.readLine());
-            String command = st.nextToken();
-            switch (command) {
+            switch (st.nextToken()) {
                 case "push":
-                    int x = Integer.parseInt(st.nextToken());
-                    queue.offer(x);
+                    queue.offer(Integer.parseInt(st.nextToken()));
                     break;
                 case "pop":
-                    if (queue.isEmpty()) sb.append(-1).append("\n");
-                    else sb.append(queue.pollFirst()).append("\n");
+                    sb.append(queue.isEmpty() ? -1 : queue.pollFirst()).append("\n");
                     break;
                 case "size":
                     sb.append(queue.size()).append("\n");
                     break;
                 case "empty":
-                    if (queue.isEmpty()) sb.append(1).append("\n");
-                    else sb.append(0).append("\n");
+                    sb.append(queue.isEmpty() ? 1 : 0).append("\n");
                     break;
                 case "front":
-                    if (queue.isEmpty()) sb.append(-1).append("\n");
-                    else sb.append(queue.peekFirst()).append("\n");
+                    sb.append(queue.isEmpty() ? -1 : queue.peekFirst()).append("\n");
                     break;
                 case "back":
-                    if (queue.isEmpty()) sb.append(-1).append("\n");
-                    else sb.append(queue.peekLast()).append("\n");
+                    sb.append(queue.isEmpty() ? -1 : queue.peekLast()).append("\n");
                     break;
             }
         }
@@ -51,6 +44,6 @@ public class Boj_10845 {
     }
 
     public static void main(String[] args) throws Exception {
-        new Boj_10845().solution();
+        new Boj_10845_deque().solution();
     }
 }
