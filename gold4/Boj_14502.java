@@ -2,10 +2,7 @@ package gold4;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /*
     연구소
@@ -15,8 +12,7 @@ public class Boj_14502 {
     static int N, M, MAX = 0;
     static int[][] map;
     static int[][] deltas = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    static Queue<Node> queue;
-    static Queue<Node> virus = new LinkedList<>();
+    static Queue<Node> virus = new ArrayDeque<>();
     static ArrayList<Node> blank = new ArrayList<>();
 
     public void solution() throws Exception {
@@ -58,18 +54,17 @@ public class Boj_14502 {
             lab[i] = map[i].clone();
         }
 
-        queue = new LinkedList<>();
-        queue.addAll(virus);
+        Queue<Node> queue = new ArrayDeque<>(virus);
 
         while (!queue.isEmpty()) {
             Node node = queue.poll();
             for (int d = 0; d < 4; d++) {
                 int nr = node.r + deltas[d][0];
                 int nc = node.c + deltas[d][1];
-                if (nr >= 0 && nr < N && nc >= 0 && nc < M && lab[nr][nc] == 0) {
-                    queue.offer(new Node(nr, nc));
-                    lab[nr][nc] = 2;
-                }
+                if (nr < 0 || nr >= N || nc < 0 || nc >= M) continue;
+                if (lab[nr][nc] != 0) continue;
+                queue.offer(new Node(nr, nc));
+                lab[nr][nc] = 2;
             }
         }
         getSafeZone(lab);
