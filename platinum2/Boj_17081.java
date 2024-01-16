@@ -10,7 +10,7 @@ import java.util.*;
     https://www.acmicpc.net/problem/17081
 */
 public class Boj_17081 {
-    static int N, M, SR, SC;
+    static int N, M;
     static char[][] map;
     static HashMap<String, Monster> monsters;
     static HashMap<String, Item> items;
@@ -20,23 +20,26 @@ public class Boj_17081 {
 
     public void solution() throws Exception {
         String command = input();
+        killer = "SPIKE TRAP";
         int length = command.length();
         int t = 0;
         for (int i = 0; i < length; i++) {
+            int dir = -1;
             switch (command.charAt(i)) {
                 case 'L':
-                    move(0);
+                    dir = 0;
                     break;
                 case 'R':
-                    move(1);
+                    dir = 1;
                     break;
                 case 'U':
-                    move(2);
+                    dir = 2;
                     break;
                 case 'D':
-                    move(3);
+                    dir = 3;
                     break;
             }
+            move(dir);
             if (isFinished > 0 || i == length - 1) {
                 t = i + 1;
                 break;
@@ -51,23 +54,21 @@ public class Boj_17081 {
         int nr = hero.r + deltas[dir][0];
         int nc = hero.c + deltas[dir][1];
         // 범위를 벗어나거나 벽(#)인 경우 이동할 수 없다.
-        if (isOutOfRange(nr, nc) || map[nr][nc] == '#')
-            action(hero.r, hero.c);
+        if (isOutOfRange(nr, nc) || map[nr][nc] == '#') action(hero.r, hero.c);
         else action(nr, nc);
     }
 
     private static void action(int r, int c) {
-        String key = r + "_" + c;
         switch (map[r][c]) {
             // 아이템 상자
             case 'B':
-                Item item = items.get(key);
+                Item item = items.get(r + "_" + c);
                 switch (item.t) {
                     case 'W':
-                        hero.weapon = item.s;
+                        hero.setWeapon(item.n);
                         break;
                     case 'A':
-                        hero.armor = item.s;
+                        hero.setArmor(item.n);
                         break;
                     case 'O':
                         hero.setAcc(item.s);
@@ -77,81 +78,66 @@ public class Boj_17081 {
                 break;
             // 가시 함정
             case '^':
-                if (hero.acc[5]) hero.hp -= 1;
-                else hero.hp = Math.max(0, hero.hp - 5);
-                if (hero.hp <= 0) {
-                    death("SPIKE TRAP");
+                int damage = hero.isOwned("DX") ? 1 : 5;
+                hero.setHp(Math.max(0, hero.getHp() - damage));
+                if (hero.getHp() <= 0) {
+                    // 죽으면 이동하지 않음
+                    if (hero.dead()) isFinished = 2;
                     return;
                 }
                 break;
             // 몬스터
             case '&':
             case 'M':
-                Monster monster = killMonster(r, c);
-                // 몬스터 승
-                if (monster != null) {
-                    death(monster.name);
-                    monster.hp = monster.maxHp;
-                    return;
-                } else {
-                    // 주인공 승 && 장신구 "HR"
-                    if (hero.acc[1])
-                        hero.hp = Math.min(hero.hp + 3, hero.maxHp);
-                }
-                break;
+                if (fight(r, c)) break;
+                else return;
         }
-        hero.r = r;
-        hero.c = c;
+        hero.setLoc(r, c);
     }
 
-    private static Monster killMonster(int r, int c) {
-        String key = r + "_" + c;
-        Monster monster = monsters.get(key);
-        boolean boss = map[monster.r][monster.c] == 'M';
-        boolean courage = hero.acc[3];
-        if (boss && hero.acc[6]) hero.hp = hero.maxHp;
-        while (hero.hp > 0) {
+    private static boolean fight(int r, int c) {
+        Monster monster = monsters.get(r + "_" + c);
+        boolean boss = map[r][c] == 'M';
+        boolean first = true;
+        // [HU] 보스 몬스터와 전투에 돌입하는 순간 체력을 최대치까지 회복
+        if (boss && hero.isOwned("HU")) hero.setHp(hero.getMaxHp());
+        while (hero.getHp() > 0) {
             // 주인공 선공
-            int damage;
-            if (courage) {
-                if (hero.acc[5])
-                    damage = hero.getAtt() * 3 - monster.def;
-                else
-                    damage = hero.getAtt() * 2 - monster.def;
-                courage = false;
-            } else damage = hero.getAtt() - monster.def;
-            monster.hp -= Math.max(1, damage);
+            monster.hp -= hero.getDamage(monster.def, first);
             if (monster.hp <= 0) {
-                monsters.remove(key);
-                // 장신구 "EX"
-                if (hero.acc[4]) hero.setExp((int) (monster.exp * 1.2));
-                else hero.setExp(monster.exp);
-                // 경험치 차면 레벨 업
-                if (hero.exp >= hero.lv * 5) hero.setLv();
-                // 보스면 게임 종료
-                if (map[monster.r][monster.c] == 'M') isFinished = 1;
-                map[r][c] = '.';
-                return null;
+                win(monster);
+                return true;
             }
             // 몬스터 후공
-            if (boss && hero.acc[6]) boss = false;
-            else hero.hp = Math.max(0, hero.hp - Math.max(1, monster.atk - hero.getDef()));
+            // [HU] 보스 몬스터의 첫 공격에 0의 데미지를 입는다.
+            if (first && boss && hero.isOwned("HU")) {
+                first = false;
+                continue;
+            }
+            hero.setHp(Math.max(0, hero.getHp() - monster.getDamage(hero.getDef())));
+            if (first) first = false;
         }
-        return monster;
+        lose(monster);
+        return false;
     }
 
-    private static void death(String str) {
-        // 부활, 장신구 "RE"
-        if (hero.acc[2]) {
-            hero.acc[2] = false;
-            hero.amountOfAcc--;
-            hero.hp = hero.maxHp;
-            hero.r = SR;
-            hero.c = SC;
-        } else {
-            // 게임 종료
+    private static void win(Monster monster) {
+        monsters.remove(monster.r + "_" + monster.c);
+        // 경험치 추가
+        hero.setExp(monster.exp);
+        // 보스를 이기면 게임 종료
+        if (map[monster.r][monster.c] == 'M') isFinished = 1;
+        // 몬스터가 사망할 경우, 그 자리는 빈 칸이 된다.
+        map[monster.r][monster.c] = '.';
+        // [HR] 전투에서 승리할 때마다 체력을 3(최대 체력 수치까지) 회복한다.
+        if (hero.isOwned("HR")) hero.setHp(Math.min(hero.getHp() + 3, hero.getMaxHp()));
+    }
+
+    private static void lose(Monster monster) {
+        monster.hp = monster.maxHp;
+        if (hero.dead()) {
             isFinished = 2;
-            killer = str;
+            killer = monster.name;
         }
     }
 
@@ -163,7 +149,8 @@ public class Boj_17081 {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         String command;
-        int K = 0, L = 0;
+        int K = 0;  // 몬스터 수
+        int L = 0;  // 아이템 수
         N = Integer.parseInt(st.nextToken());
         M = Integer.parseInt(st.nextToken());
         map = new char[N][M];
@@ -175,10 +162,8 @@ public class Boj_17081 {
                 map[i][j] = input.charAt(j);
                 switch (map[i][j]) {
                     case '@':
-                        SR = i;
-                        SC = j;
-                        hero = new Hero(SR, SC);
-                        map[SR][SC] = '.';
+                        hero = new Hero(i, j);
+                        map[i][j] = '.';
                         break;
                     case 'M':
                     case '&':
@@ -192,7 +177,6 @@ public class Boj_17081 {
         }
         command = br.readLine();
         for (int i = 0; i < K; i++) {
-            StringBuilder sb = new StringBuilder();
             st = new StringTokenizer(br.readLine());
             int r = Integer.parseInt(st.nextToken()) - 1;
             int c = Integer.parseInt(st.nextToken()) - 1;
@@ -201,45 +185,16 @@ public class Boj_17081 {
             int a = Integer.parseInt(st.nextToken());
             int h = Integer.parseInt(st.nextToken());
             int e = Integer.parseInt(st.nextToken());
-            sb.append(r).append("_").append(c);
-            monsters.put(sb.toString(), new Monster(r, c, s, w, a, h, e));
+            monsters.put(r + "_" + c, new Monster(r, c, s, w, a, h, e));
         }
         for (int i = 0; i < L; i++) {
-            StringBuilder sb = new StringBuilder();
             st = new StringTokenizer(br.readLine());
             int r = Integer.parseInt(st.nextToken()) - 1;
             int c = Integer.parseInt(st.nextToken()) - 1;
             char t = st.nextToken().charAt(0);
             String str = st.nextToken();
-            int s;
-            switch (str) {
-                case "HR":
-                    s = 1;
-                    break;
-                case "RE":
-                    s = 2;
-                    break;
-                case "CO":
-                    s = 3;
-                    break;
-                case "EX":
-                    s = 4;
-                    break;
-                case "DX":
-                    s = 5;
-                    break;
-                case "HU":
-                    s = 6;
-                    break;
-                case "CU":
-                    s = 7;
-                    break;
-                default:
-                    s = Integer.parseInt(str);
-                    break;
-            }
-            sb.append(r).append("_").append(c);
-            items.put(sb.toString(), new Item(r, c, t, s));
+            if (t == 'O') items.put(r + "_" + c, new Item(r, c, t, str));
+            else items.put(r + "_" + c, new Item(r, c, t, Integer.parseInt(str)));
         }
         return command;
     }
@@ -274,10 +229,18 @@ public class Boj_17081 {
 }
 
 class Item {
-    int r, c, s;
+    int r, c, n;
     char t;
+    String s;
 
-    public Item(int r, int c, char t, int s) {
+    public Item(int r, int c, char t, int n) {
+        this.r = r;
+        this.c = c;
+        this.t = t;
+        this.n = n;
+    }
+
+    public Item(int r, int c, char t, String s) {
         this.r = r;
         this.c = c;
         this.t = t;
@@ -287,24 +250,30 @@ class Item {
 
 class Monster {
     String name;
-    int r, c, atk, def, hp, maxHp, exp;
+    int r, c, att, def, hp, exp;
+    final int maxHp;
 
     public Monster(int r, int c, String s, int w, int a, int h, int e) {
         this.r = r;
         this.c = c;
-        this.name = s;
-        this.atk = w;
-        this.def = a;
-        this.hp = h;
-        this.maxHp = hp;
-        this.exp = e;
+        name = s;
+        att = w;
+        def = a;
+        hp = h;
+        maxHp = hp;
+        exp = e;
+    }
+
+    public int getDamage(int def) {
+        return Math.max(1, att - def);
     }
 }
 
 class Hero {
-    int r, c, lv, hp, maxHp, att, def, exp, weapon, armor;
-    boolean[] acc;
-    int amountOfAcc;
+    int r, c;
+    private int lv, hp, att, def, exp, weapon, armor;
+    Set<String> acc;
+    final int SR, SC;
 
     public Hero(int r, int c) {
         /*
@@ -312,20 +281,28 @@ class Hero {
          * - 정수로 표시된다.
          * - 초기 값은 체력 20, 공격력 2, 방어력 2이다.
          */
-        this(1, 20, 20, 2, 2, 0);
+        this(1, 20, 2, 2, 0, r, c);
         this.r = r;
         this.c = c;
-        acc = new boolean[8];
-        amountOfAcc = 0;
+        acc = new HashSet<>();
     }
 
-    public Hero(int lv, int hp, int maxHp, int att, int def, int exp) {
+    public Hero(int lv, int hp, int att, int def, int exp, int sr, int sc) {
         this.lv = lv;
         this.hp = hp;
-        this.maxHp = maxHp;
         this.att = att;
         this.def = def;
         this.exp = exp;
+        SR = sr;
+        SC = sc;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public int getMaxHp() {
+        return 20 + ((lv - 1) * 5);
     }
 
     public int getAtt() {
@@ -336,42 +313,87 @@ class Hero {
         return def + armor;
     }
 
+    public boolean isOwned(String acc) {
+        return this.acc.contains(acc);
+    }
+
+    public int getDamage(int def, boolean first) {
+        int att = getAtt();
+        // [CO] 모든 전투의 첫 번째 공격에서 주인공의 공격력이 두 배로 적용된다.
+        if (first && isOwned("CO")) {
+            // [DX] Courage 장신구와 함께 착용할 경우, 공격력 효과가 세 배로 적용된다.
+            att = isOwned("DX") ? getAtt() * 3 : getAtt() * 2;
+        }
+        return Math.max(1, att - def);
+    }
+
+    public void setLoc(int r, int c) {
+        this.r = r;
+        this.c = c;
+    }
+
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public void setWeapon(int n) {
+        this.weapon = n;
+    }
+
+    public void setArmor(int n) {
+        this.armor = n;
+    }
+
+    public void setExp(int exp) {
+        // [EX] 얻는 경험치가 1.2배가 된다. 소수점 아래는 버린다.
+        this.exp += acc.contains("EX") ? (int) (exp * 1.2) : exp;
+        // 레벨 N에서 N+1이 되기 위한 필요 경험치는 5×N이다.
+        if (this.exp >= lv * 5) levelUp();
+    }
+
+    public void setAcc(String name) {
+        /*
+         * 장신구의 경우엔 착용할 수 있는 칸이 남았을 경우,
+         * 그리고 동일한 효과의 장신구를 착용하지 않고 있을 경우에만 얻은 장신구를 착용한다.
+         */
+        if (acc.size() >= 4) return;
+        if (acc.contains(name)) return;
+        acc.add(name);
+    }
+
+    public boolean dead() {
+        if (isOwned("RE")) {
+            resurrect();
+            return false;
+        }
+        return true;
+    }
+
+    public void resurrect() {
+        acc.remove("RE");
+        setHp(getMaxHp());
+        setLoc(SR, SC);
+    }
+
     /*
-     * 처음엔 레벨 1이며, 레벨 N에서 N+1이 되기 위한 필요 경험치는 5×N이다.
      * 레벨이 오를 경우,
      * 최대 HP가 5, 공격력과 방어력이 2씩 상승한 뒤 HP가 모두 회복된다.
      * 경험치를 얻어 레벨이 오르게 되면, 남는 경험치는 버려진다.
      * 예를 들어, 다음 레벨까지 필요한 경험치가 3인 상태에서 5의 경험치를 얻는다면, 레벨이 오른 다음, 남은 2의 경험치는 버려지고 0의 경험치를 갖고 있는 상태가 된다.
      */
-    public void setLv() {
-        this.lv++;
-        maxHp += 5;
+    public void levelUp() {
+        lv++;
         att += 2;
         def += 2;
-        hp = maxHp;
+        setHp(getMaxHp());
         exp = 0;
-    }
-
-    public void setExp(int exp) {
-        this.exp += exp;
-    }
-
-    public void setAcc(int idx) {
-        /*
-         * 장신구의 경우엔 착용할 수 있는 칸이 남았을 경우,
-         * 그리고 동일한 효과의 장신구를 착용하지 않고 있을 경우에만 얻은 장신구를 착용한다.
-         */
-        if (amountOfAcc >= 4) return;
-        if (acc[idx]) return;
-        acc[idx] = true;
-        amountOfAcc++;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("LV : ").append(lv).append("\n");
-        sb.append("HP : ").append(hp).append("/").append(maxHp).append("\n");
+        sb.append("HP : ").append(hp).append("/").append(getMaxHp()).append("\n");
         sb.append("ATT : ").append(att).append("+").append(weapon).append("\n");
         sb.append("DEF : ").append(def).append("+").append(armor).append("\n");
         sb.append("EXP : ").append(exp).append("/").append(lv * 5).append("\n");
