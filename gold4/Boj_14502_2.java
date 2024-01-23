@@ -9,95 +9,108 @@ import java.util.*;
     https://www.acmicpc.net/problem/14502
 */
 public class Boj_14502_2 {
-    static int N, M, ans;
-    static int[][] map;
-    static ArrayList<int[]> virus;
+    static int N, M, area = Integer.MIN_VALUE;
+    static char[][] map;
+    static Node[] wall;
+    static ArrayList<Node> virus;
 
-    public void solution() throws Exception {
+    private static void solution() throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         N = Integer.parseInt(st.nextToken());
         M = Integer.parseInt(st.nextToken());
-        map = new int[N][M];
+        map = new char[N][M];
         virus = new ArrayList<>();
-        ans = Integer.MIN_VALUE;
+        wall = new Node[3];
         for (int i = 0; i < N; i++) {
-            st = new StringTokenizer(br.readLine());
-            for (int j = 0; j < M; j++) {
-                map[i][j] = Integer.parseInt(st.nextToken());
-                if (map[i][j] == 2) virus.add(new int[]{i, j});
+            String input = br.readLine();
+            for (int j = 0, idx = 0; j < M; j++, idx += 2) {
+                map[i][j] = input.charAt(idx);
+                if (map[i][j] == '2') virus.add(new Node(i, j));
             }
         }
-        dfs(0, 0, 0);
-        System.out.println(ans);
+
+        comb(0, 0);
+        System.out.println(area);
     }
 
-    private static void dfs(int r, int c, int cnt) {
-        if (cnt == 3) {
-            ans = Math.max(ans, bfs());
+    private static void comb(int depth, int start) {
+        if (depth == 3) {
+            area = Math.max(area, bfs(wall));
+//            System.out.println(Arrays.toString(wall));
             return;
         }
-
-        for (int i = r; i < N; i++) {
-            for (int j = c; j < M; j++) {
-                if (map[i][j] != 0) continue;
-                map[i][j] = 1;
-                dfs(i, j, cnt + 1);
-                map[i][j] = 0;
+        for (int i = start; i < N * M; i++) {
+            int r = i / M;
+            int c = i % M;
+            if (map[r][c] == '0') {
+                wall[depth] = new Node(r, c);
+                comb(depth + 1, i + 1);
             }
         }
     }
 
-    private static int bfs() {
+    private static int bfs(Node[] wall) {
         int[][] deltas = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-        int[][] temp = new int[N][M];
+        Queue<Node> queue = new ArrayDeque<>();
         boolean[][] visited = new boolean[N][M];
+        char[][] temp = new char[N][M];
         for (int i = 0; i < N; i++) {
-            temp[i] = map[i].clone();
+            for (int j = 0; j < M; j++) {
+                temp[i][j] = map[i][j];
+            }
         }
-        Queue<int[]> queue = new ArrayDeque<>(virus);
-        for (int[] node : virus) {
-            visited[node[0]][node[1]] = true;
+        for (Node node : wall) {
+            temp[node.r][node.c] = '1';
         }
+        for (Node node : virus) {
+            queue.offer(new Node(node.r, node.c));
+            visited[node.r][node.c] = true;
+        }
+
         while (!queue.isEmpty()) {
-            int[] node = queue.poll();
+            Node node = queue.poll();
             for (int d = 0; d < 4; d++) {
-                int nr = node[0] + deltas[d][0];
-                int nc = node[1] + deltas[d][1];
+                int nr = node.r + deltas[d][0];
+                int nc = node.c + deltas[d][1];
                 if (nr < 0 || nr >= N || nc < 0 || nc >= M) continue;
                 if (visited[nr][nc]) continue;
-                if (temp[nr][nc] != 0) continue;
-                queue.offer(new int[]{nr, nc});
-                temp[nr][nc] = 2;
+                if (temp[nr][nc] != '0') continue;
+                queue.offer(new Node(nr, nc));
                 visited[nr][nc] = true;
+                temp[nr][nc] = '2';
             }
         }
-        return getArea(temp);
+
+        return getSafeArea(temp);
     }
 
-    private static int getArea(int[][] map) {
-        int area = 0;
-        for (int[] mm : map) {
-            for (int m : mm) {
-                if (m == 0) area++;
+    private static int getSafeArea(char[][] temp) {
+        int count = 0;
+        for (char[] mm : temp) {
+            for (char m : mm) {
+                if (m == '0') count++;
             }
         }
-        return area;
+        return count;
     }
 
-    private static int[][] setMap() {
-        int[][] temp = new int[N][M];
-        for (int i = 0; i < N; i++) {
-            temp[i] = map[i].clone();
+    private static class Node {
+        int r, c;
+
+        public Node(int r, int c) {
+            this.r = r;
+            this.c = c;
         }
-        for (int[] node : virus) {
-            temp[node[0]][node[1]] = 2;
+
+        @Override
+        public String toString() {
+            return "(" + r + ", " + c + ")";
         }
-        return temp;
     }
 
     public static void main(String[] args) throws Exception {
-        new Boj_14502_2().solution();
+        solution();
     }
 }
 
