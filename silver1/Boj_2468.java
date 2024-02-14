@@ -2,7 +2,7 @@ package silver1;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
+import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -14,44 +14,40 @@ import java.util.StringTokenizer;
     dfs(19588KB, 272ms)
 */
 public class Boj_2468 {
-    static int N, MIN = 101, MAX = 0, ans;
+    static int N, ans;
     static int[][] map;
     static boolean[][] visited;
     static int[][] deltas = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-    public void solution() throws Exception {
+    private static void solution() throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         N = Integer.parseInt(br.readLine());
         StringTokenizer st;
         map = new int[N][N];
+        int min = 101, max = 0;
         for (int i = 0; i < N; i++) {
             st = new StringTokenizer(br.readLine());
             for (int j = 0; j < N; j++) {
                 map[i][j] = Integer.parseInt(st.nextToken());
-                if (MAX < map[i][j]) MAX = map[i][j];
-                if (MIN > map[i][j]) MIN = map[i][j];
+                if (max < map[i][j]) max = map[i][j];
+                if (min > map[i][j]) min = map[i][j];
             }
         }
-        getSafetyArea();
+        getSafetyArea(min, max);
         System.out.println(ans);
     }
 
-    static void getSafetyArea() {
-        for (int h = MIN - 1; h <= MAX; h++) {
+    static void getSafetyArea(int min, int max) {
+        for (int h = min - 1; h <= max; h++) {
             visited = new boolean[N][N];
             int count = 0;
             for (int i = 0; i < N; i++) {
                 for (int j = 0; j < N; j++) {
-                    if (map[i][j] <= h) visited[i][j] = true;
-                }
-            }
-            for (int i = 0; i < N; i++) {
-                for (int j = 0; j < N; j++) {
-                    if (!visited[i][j]) {
-                        count++;
-//                        bfs(i, j);
-                        dfs(i, j, h);
-                    }
+                    if (map[i][j] <= h) continue;
+                    if (visited[i][j]) continue;
+                    count++;
+//                    bfs(i, j, h);
+                    dfs(i, j, h);
                 }
             }
             if (ans < count) ans = count;
@@ -63,14 +59,15 @@ public class Boj_2468 {
         for (int d = 0; d < 4; d++) {
             int nr = r + deltas[d][0];
             int nc = c + deltas[d][1];
-            if (nr >= 0 && nr < N && nc >= 0 && nc < N && !visited[nr][nc] && map[nr][nc] > h) {
-                dfs(nr, nc, h);
-            }
+            if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+            if (visited[nr][nc]) continue;
+            if (map[nr][nc] <= h) continue;
+            dfs(nr, nc, h);
         }
     }
 
-    static void bfs(int r, int c) {
-        Queue<Node> queue = new LinkedList<>();
+    static void bfs(int r, int c, int h) {
+        Queue<Node> queue = new ArrayDeque<>();
         queue.offer(new Node(r, c));
         visited[r][c] = true;
         Node node;
@@ -79,10 +76,11 @@ public class Boj_2468 {
             for (int d = 0; d < 4; d++) {
                 int nr = node.r + deltas[d][0];
                 int nc = node.c + deltas[d][1];
-                if (nr >= 0 && nr < N && nc >= 0 && nc < N && !visited[nr][nc]) {
-                    queue.offer(new Node(nr, nc));
-                    visited[nr][nc] = true;
-                }
+                if (nr < 0 || nr >= N || nc < 0 || nc >= N) continue;
+                if (visited[nr][nc]) continue;
+                if (map[nr][nc] <= h) continue;
+                queue.offer(new Node(nr, nc));
+                visited[nr][nc] = true;
             }
         }
     }
@@ -97,6 +95,6 @@ public class Boj_2468 {
     }
 
     public static void main(String[] args) throws Exception {
-        new Boj_2468().solution();
+        solution();
     }
 }
