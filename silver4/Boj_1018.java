@@ -9,7 +9,7 @@ import java.util.StringTokenizer;
     https://www.acmicpc.net/problem/1018
 */
 public class Boj_1018 {
-    public void solution() throws Exception {
+    private static void solution() throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         int N = Integer.parseInt(st.nextToken());
@@ -24,39 +24,21 @@ public class Boj_1018 {
         int min = Integer.MAX_VALUE;
         for (int r = 0; r <= N - 8; r++) {
             for (int c = 0; c <= M - 8; c++) {
-                int white = 0;
-                int black = 0;
-                loop:
+                int count = 0;
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
-                        boolean color = board[r + i][c + j];
-                        if (i % 2 == 0) {
-                            if (j % 2 == 0) {
-                                if (!color) white++;
-                                else black++;
-                            } else {
-                                if (color) white++;
-                                else black++;
-                            }
-                        } else {
-                            if (j % 2 == 0) {
-                                if (color) white++;
-                                else black++;
-                            } else {
-                                if (!color) white++;
-                                else black++;
-                            }
+                        if (board[r + i][c + j] != ((i + j) % 2 == 0)) {
+                            count++;
                         }
-                        if (white >= min && black >= min) break loop;
                     }
                 }
-                min = Math.min(min, Math.min(white, black));
+                min = Math.min(min, Math.min(count, 64 - count));
             }
         }
         System.out.println(min);
     }
 
     public static void main(String[] args) throws Exception {
-        new Boj_1018().solution();
+        solution();
     }
 }
