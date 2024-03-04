@@ -20,9 +20,9 @@ public class Boj_1920 {
         for (int i = 0; i < N; i++) {
             set.add(Integer.parseInt(st.nextToken()));
         }
-        int M = Integer.parseInt(br.readLine());
+        N = Integer.parseInt(br.readLine());
         st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < M; i++) {
+        for (int i = 0; i < N; i++) {
             sb.append(set.contains(Integer.parseInt(st.nextToken())) ? 1 : 0).append("\n");
         }
         System.out.println(sb);
