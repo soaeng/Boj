@@ -53,7 +53,6 @@ public class Boj_2206_2 {
                         queue.offer(new Node(nr, nc, true));
                         visited[1][nr][nc] = true;
                     } else {
-                        if (visited[node.isBroken ? 1 : 0][nr][nc]) continue;
                         queue.offer(new Node(nr, nc, node.isBroken));
                         visited[node.isBroken ? 1 : 0][nr][nc] = true;
                     }
