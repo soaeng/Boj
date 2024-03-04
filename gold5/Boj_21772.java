@@ -44,7 +44,7 @@ public class Boj_21772 {
         for (int d = 0; d < 5; d++) {
             int nr = r + deltas[d][0];
             int nc = c + deltas[d][1];
-            if (!isInRange(nr, nc)) continue;
+            if (isOutOfRange(nr, nc)) continue;
             if (map[nr][nc] == '#') continue;
             if (map[nr][nc] == 'S') {
                 map[nr][nc] = '.';
@@ -54,8 +54,8 @@ public class Boj_21772 {
         }
     }
 
-    private static boolean isInRange(int r, int c) {
-        return r >= 0 && r < R && c >= 0 && c < C;
+    private static boolean isOutOfRange(int r, int c) {
+        return r < 0 || r >= R || c < 0 || c >= C;
     }
 
     public static void main(String[] args) throws Exception {
