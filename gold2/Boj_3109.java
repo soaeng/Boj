@@ -10,7 +10,6 @@ import java.util.StringTokenizer;
 */
 public class Boj_3109 {
     static int R, C, count;
-    static boolean status;
     static char[][] map;
     static boolean[][] visited;
     static int[][] deltas = {{-1, 1}, {0, 1}, {1, 1}};
@@ -27,28 +26,26 @@ public class Boj_3109 {
             map[r] = br.readLine().toCharArray();
         }
         for (int r = 0; r < R; r++) {
-            status = false;
-            dfs(r, 0, 0);
+            dfs(r, 0);
         }
         System.out.println(count);
     }
 
-    private static void dfs(int r, int c, int depth) {
-        if (status) return;
+    private static boolean dfs(int r, int c) {
         visited[r][c] = true;
-        if (c == C - 1) {
-            count++;
-            status = true;
-            return;
-        }
         for (int d = 0; d < 3; d++) {
             int nr = r + deltas[d][0];
             int nc = c + deltas[d][1];
+            if (nc == C - 1) {
+                count++;
+                return true;
+            }
             if (isOutOfRange(nr, nc)) continue;
             if (visited[nr][nc]) continue;
             if (map[nr][nc] == 'x') continue;
-            dfs(nr, nc, depth + 1);
+            if (dfs(nr, nc)) return true;
         }
+        return false;
     }
 
     private static boolean isOutOfRange(int r, int c) {
