@@ -41,15 +41,7 @@ public class Boj_15686_2 {
 
     private static void comb(int depth, int start) {
         if (depth == M) {
-            int sum = 0;
-            for (Node h : house) {
-                int dist = Integer.MAX_VALUE;
-                for (Node t : tgt) {
-                    dist = Math.min(dist, Math.abs(h.r - t.r) + Math.abs(h.c - t.c));
-                }
-                sum += dist;
-            }
-            min = Math.min(min, sum);
+            calculate();
             return;
         }
         if (start == store.size()) return;
@@ -57,6 +49,19 @@ public class Boj_15686_2 {
         comb(depth + 1, start + 1);
         tgt.remove(store.get(start));
         comb(depth, start + 1);
+    }
+
+    private static void calculate() {
+        int sum = 0;
+        for (Node h : house) {
+            int dist = Integer.MAX_VALUE;
+            for (Node t : tgt) {
+                dist = Math.min(dist, Math.abs(h.r - t.r) + Math.abs(h.c - t.c));
+            }
+            sum += dist;
+            if (sum > min) return;
+        }
+        min = Math.min(min, sum);
     }
 
     private static class Node {
