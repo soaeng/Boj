@@ -6,10 +6,6 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
-/*
-    아맞다우산
-    https://www.acmicpc.net/problem/17244
-*/
 public class Boj_17244 {
     static int R, C;
     static char[][] map;
@@ -73,11 +69,6 @@ public class Boj_17244 {
             this.r = r;
             this.c = c;
             this.item = item;
-        }
-
-        @Override
-        public String toString() {
-            return "(" + r + ", " + c + ", " + item + "(" + Integer.toBinaryString(item) + ") )";
         }
     }
 
