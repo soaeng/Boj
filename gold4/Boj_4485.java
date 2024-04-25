@@ -41,6 +41,7 @@ public class Boj_4485 {
         pq.offer(new Node(0, 0, map[0][0]));
         while (!pq.isEmpty()) {
             Node node = pq.poll();
+            if (node.r == N - 1 && node.c == N - 1) return cost[N - 1][N - 1];
             for (int d = 0; d < 4; d++) {
                 int nr = node.r + deltas[d][0];
                 int nc = node.c + deltas[d][1];
