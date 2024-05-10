@@ -18,8 +18,6 @@ public class Boj_2461 {
         int N = Integer.parseInt(st.nextToken());
         int M = Integer.parseInt(st.nextToken());
         int[][] arr = new int[N][M];
-        int[] indexes = new int[N];
-        int index = 0;
         int max = 0;
         int result = Integer.MAX_VALUE;
 
@@ -30,40 +28,28 @@ public class Boj_2461 {
             }
             Arrays.sort(arr[i]);
             max = Math.max(max, arr[i][0]);
-            pq.offer(new Student(i, arr[i][0]));
+            pq.offer(new Student(i, 0, arr[i][0]));
         }
 
-//        while (indexes[index] < M) {
-//            int max = -1, min = Integer.MAX_VALUE;
-//            for (int i = 0; i < N; i++) {
-//                if (max < arr[i][indexes[i]]) max = arr[i][indexes[i]];
-//                if (min > arr[i][indexes[i]]) {
-//                    min = arr[i][indexes[i]];
-//                    index = i;
-//                }
-//            }
-//            result = Math.min(result, max - min);
-//            if (result == 0) break;
-//            indexes[index]++;
-//        }
-
-        while (indexes[index] < M) {
+        while (true) {
             Student student = pq.poll();
-            index = student.index;
             int min = student.value;
             result = Math.min(result, max - min);
             if (result == 0) break;
-            if (++indexes[index] == M) break;
-            max = Math.max(max, arr[index][indexes[index]]);
-            pq.offer(new Student(index, arr[index][indexes[index]]));
+            if (student.index + 1 == M) break;
+            int cid = student.cid;
+            int idx = student.index + 1;
+            max = Math.max(max, arr[cid][idx]);
+            pq.offer(new Student(cid, idx, arr[cid][idx]));
         }
         System.out.println(result);
     }
 
     private static class Student implements Comparable<Student> {
-        int index, value;
+        int cid, index, value;
 
-        public Student(int index, int value) {
+        public Student(int cid, int index, int value) {
+            this.cid = cid;
             this.index = index;
             this.value = value;
         }
