@@ -31,9 +31,7 @@ public class Boj_12913 {
 
     private static double dijkstra() {
         int[][] dist = new int[K + 1][N];
-        for (int k = 0; k <= K; k++) {
-            Arrays.fill(dist[k], Integer.MAX_VALUE);
-        }
+        for (int k = 0; k <= K; k++) Arrays.fill(dist[k], Integer.MAX_VALUE);
         PriorityQueue<Node> pq = new PriorityQueue<>();
         dist[0][0] = 0;
         pq.offer(new Node(0, 0, 0));
@@ -41,6 +39,7 @@ public class Boj_12913 {
             Node node = pq.poll();
             for (int i = 0; i < N; i++) {
                 if (node.num == i) continue;
+
                 if (dist[node.k][i] > dist[node.k][node.num] + distances[node.num][i]) {
                     dist[node.k][i] = dist[node.k][node.num] + distances[node.num][i];
                     pq.offer(new Node(i, dist[node.k][i], node.k));
@@ -55,9 +54,7 @@ public class Boj_12913 {
             }
         }
         int min = Integer.MAX_VALUE;
-        for (int k = 0; k <= K; k++) {
-            min = Math.min(min, dist[k][1]);
-        }
+        for (int k = 0; k <= K; k++) min = Math.min(min, dist[k][1]);
         return min;
     }
 
@@ -73,7 +70,6 @@ public class Boj_12913 {
 
         @Override
         public int compareTo(Node node) {
-//            return Double.compare(distance, node.distance);
             return distance - node.distance;
         }
     }
